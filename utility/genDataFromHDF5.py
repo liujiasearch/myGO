@@ -3,6 +3,7 @@ import random
 import numpy as np
 
 #batch_num=1000
+size=19
 
 def roll(matrix,transpose=False,rotate=0):
     if transpose:
@@ -16,9 +17,8 @@ class HDF5OBJ:
 
     def fetchRandomData(self,batch):
         sub_dir_len=len(self.file_handle['z'].keys())
-        data_x=[]
-        data_y=[]
-        data_z=[]
+        data_x=[] 
+        data_y=[] 
         for i in range(batch):
             sub_rand_num=random.randint(0,sub_dir_len-1)
             lens=self.file_handle['z'][str(sub_rand_num)].len()
@@ -38,17 +38,23 @@ class HDF5OBJ:
             #对获取的数据增加随机变形功能
             transpose=random.randint(0,1)
             rotate=random.randint(0,3)
-            x=roll(x,transpose=transpose,rotate=rotate)
-            y=roll(y,transpose=transpose,rotate=rotate)
+            x=roll(x,transpose=transpose,rotate=rotate) #当前局势
+            y=roll(y,transpose=transpose,rotate=rotate) #该下哪一步
+            y=y.astype(int).flatten()
+            z=z.astype(int) #该谁下
+            w=1-np.abs(x) #哪些地方可以下
             #z=roll(z,transpose=transpose,rotate=rotate)
-            data_x.append(x)
+            data_x.append([x,z,w])
             data_y.append(y)
-            data_z.append(z)
+        return np.array(data_x).reshape(batch,size,size,3),np.array(data_y) #调整成tf的图像格式
 
-#'''for test
+'''for test
 obj5=HDF5OBJ(file_with_path)
-obj5.fetchRandomData(1)
-#'''
+[a,b]=obj5.fetchRandomData(2)
+print(a,a.shape)
+print(b,b.shape)
+
+'''
 
             
 
